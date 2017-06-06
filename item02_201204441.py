@@ -347,29 +347,64 @@ class BasicPaser(object):
         return head
 
 def insert_table(id, value):  # 테이블 삽입 #전역 Method
-    print('insert id print: ')
-    print(print_node(id))
-    print('insert value print: ')
-    print(print_node(value))
-    idValue = id.value
-    vValue = value.value
-    insertDicM[idValue] = vValue
-    print(insertDicM)
+
+    idvalue = id.value
+    vValue = run_expr(value)
+
+    # run_expr(value)가 다 해주는 부분
+    # if value.type is TokenType.LIST:
+    #     result_value = run_list(value)
+    #     vValue = result_value.value
+    # else :
+    #     vValue = value.value
+
+    # insertTable에 저장하는 부분
+    insertDicM[idvalue] = vValue.value
+
+    # insertTable에 저장됨을 확인 하는 부분
+    if insertDicM.has_key(idvalue) is True:
+        print 'Success define '+ idvalue
+    else :
+        print 'define Fail'
+
 
 def lookup_table(id):  # 테이블에 값이 있는지 여부 파악 #전역 Method
 
-    print id
+    idValue = id.value
+
+    if insertDicM.has_key(idValue) is True:
+        return Node(TokenType.TRUE)
+    else:
+        return Node(TokenType.FALSE)
+
+def lookup_createNode_or_str(id,flag = False):
 
     idValue = id.value
 
-    print insertDicM.has_key(idValue)
+    # flag 값이 false면  node타입으로 변경하여 반환 / true면 str값 그대로 반환
+    if flag is False:
+        if insertDicM.has_key(idValue) is True:
 
-    if insertDicM.has_key(idValue) is True:
-        print "look TURE"
-        return Node(TokenType.TRUE)
-    else:
-        print "look FALSE"
-        return Node(TokenType.FALSE)
+            vValue = insertDicM[idValue]
+
+            look_cute = CuteScanner(vValue)
+            look_tokens = look_cute.tokenize()
+            look_basic_paser = BasicPaser(look_tokens)
+            insertvaluenode = look_basic_paser.parse_expr()
+            return insertvaluenode
+
+        else:
+            return id
+
+    elif flag is True :
+        if insertDicM.has_key(idValue) is True:
+            vValue = insertDicM[idValue]
+            return vValue
+        else :
+            return id
+
+    else :
+        return id
 
 
 def run_list(root_node):
@@ -402,23 +437,38 @@ def run_func(op_code_node):
 
     def cons(node):
         """
+        cons는 str가지고 움직이는 것. 사칙연산은 반드시 node형태에서 계산이 들어감
         :type node: Node
         """
         l_node = node.value.next
         r_node = l_node.next
-        r_node = run_expr(r_node)
-        l_node = run_expr(l_node)
-        new_r_node = r_node
-        new_l_node = l_node
-        new_r_node = strip_quote(new_r_node)
-        new_l_node = strip_quote(new_l_node)
+
+        if insertDicM.has_key(l_node.value) is True:
+            look_l_node = insertDicM[l_node.value]
+            new_l_node = strip_quote(look_l_node)
+        else:
+            new_l_node = strip_quote(l_node)
+
+        if insertDicM.has_key(r_node.value) is True:
+            look_r_node = insertDicM[r_node.value]
+            new_r_node = strip_quote(look_r_node)
+        else:
+            new_r_node = strip_quote(r_node)
+
         new_l_node.next = new_r_node.value
 
         return create_new_quote_list(new_l_node, True)
 
     def car(node):
-        l_node = run_expr(node.value.next)
-        result = strip_quote(l_node).value
+
+        l_node = node.value.next
+
+        if insertDicM.has_key(l_node.value) is True:
+            look_l_node = insertDicM[l_node.value]
+            result = strip_quote(look_l_node).value
+        else:
+            result = strip_quote(l_node).value
+
         if result.type is not TokenType.LIST:
             return result
         return create_new_quote_list(result)
@@ -477,8 +527,11 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        new_l_node = run_expr(l_node)
-        new_r_node = run_expr(r_node)
+        look_l_node = lookup_createNode(l_node)
+        look_r_node = lookup_createNode(r_node)
+
+        new_l_node = run_expr(look_l_node)
+        new_r_node = run_expr(look_r_node)
 
         plusResult = int(new_l_node.value) + int(new_r_node.value)
         return Node(TokenType.INT, plusResult)
@@ -488,8 +541,11 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        new_l_node = run_expr(l_node)
-        new_r_node = run_expr(r_node)
+        look_l_node = lookup_createNode(l_node)
+        look_r_node = lookup_createNode(r_node)
+
+        new_l_node = run_expr(look_l_node)
+        new_r_node = run_expr(look_r_node)
 
         minusResult = int(new_l_node.value) - int (new_r_node.value)
         return Node(TokenType.INT, minusResult)
@@ -499,8 +555,11 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        new_l_node = run_expr(l_node)
-        new_r_node = run_expr(r_node)
+        look_l_node = lookup_createNode(l_node)
+        look_r_node = lookup_createNode(r_node)
+
+        new_l_node = run_expr(look_l_node)
+        new_r_node = run_expr(look_r_node)
 
         multipleResult = int(new_l_node.value) * int(new_r_node.value)
         return Node(TokenType.INT, multipleResult)
@@ -510,8 +569,11 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        new_l_node = run_expr(l_node)
-        new_r_node = run_expr(r_node)
+        look_l_node = lookup_createNode(l_node)
+        look_r_node = lookup_createNode(r_node)
+
+        new_l_node = run_expr(look_l_node)
+        new_r_node = run_expr(look_r_node)
 
         if(new_r_node.value is 0):
             print ("Error")
@@ -561,8 +623,6 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        print(l_node)
-        print(r_node)
         insert_table(l_node, r_node)
 
     # def lambda(node):
@@ -759,7 +819,7 @@ def Test_method(input):
 
 def Test_All():
 
-    while (1):
+    while 1:
         letter = raw_input('> ')
         Test_method(letter)
 
