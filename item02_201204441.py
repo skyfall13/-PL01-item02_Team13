@@ -351,13 +351,6 @@ def insert_table(id, value):  # 테이블 삽입 #전역 Method
     idvalue = id.value
     vValue = run_expr(value)
 
-    # run_expr(value)가 다 해주는 부분
-    # if value.type is TokenType.LIST:
-    #     result_value = run_list(value)
-    #     vValue = result_value.value
-    # else :
-    #     vValue = value.value
-
     # insertTable에 저장하는 부분
     insertDicM[idvalue] = vValue.value
 
@@ -443,17 +436,11 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        if insertDicM.has_key(l_node.value) is True:
-            look_l_node = insertDicM[l_node.value]
-            new_l_node = strip_quote(look_l_node)
-        else:
-            new_l_node = strip_quote(l_node)
+        look_l_node = lookup_createNode_or_str(l_node,True)
+        new_l_node = strip_quote(look_l_node)
 
-        if insertDicM.has_key(r_node.value) is True:
-            look_r_node = insertDicM[r_node.value]
-            new_r_node = strip_quote(look_r_node)
-        else:
-            new_r_node = strip_quote(r_node)
+        look_r_node = lookup_createNode_or_str(r_node, True)
+        new_r_node = strip_quote(look_r_node)
 
         new_l_node.next = new_r_node.value
 
@@ -462,29 +449,28 @@ def run_func(op_code_node):
     def car(node):
 
         l_node = node.value.next
+        look_l_node = lookup_createNode_or_str(l_node, True)
+        new_l_node = strip_quote(look_l_node).value
 
-        if insertDicM.has_key(l_node.value) is True:
-            look_l_node = insertDicM[l_node.value]
-            result = strip_quote(look_l_node).value
-        else:
-            result = strip_quote(l_node).value
-
-        if result.type is not TokenType.LIST:
-            return result
-        return create_new_quote_list(result)
+        if new_l_node.type is not TokenType.LIST:
+            return new_l_node
+        return create_new_quote_list(new_l_node)
 
     def cdr(node):
         """
         :type node: Node
         """
         l_node = node.value.next
-        l_node = run_expr(l_node)
-        new_r_node = strip_quote(l_node)
-        return create_new_quote_list(new_r_node.value.next, True)
+        look_l_node = lookup_createNode_or_str(l_node, True)
+        new_l_node = strip_quote(look_l_node).value
+        return create_new_quote_list(new_l_node.next, True)
 
     def null_q(node):
+        # (define a 1) 후 (null? a)시 문제 발생
         l_node = run_expr(node.value.next)
-        new_l_node = strip_quote(l_node).value
+        look_l_node = lookup_createNode_or_str(l_node,True)
+        new_l_node = strip_quote(look_l_node).value
+
         if new_l_node is None:
             return Node(TokenType.TRUE)
         else:
@@ -527,8 +513,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode(l_node)
-        look_r_node = lookup_createNode(r_node)
+        look_l_node = lookup_createNode_or_str(l_node)
+        look_r_node = lookup_createNode_or_str(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -541,8 +527,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode(l_node)
-        look_r_node = lookup_createNode(r_node)
+        look_l_node = lookup_createNode_or_str(l_node)
+        look_r_node = lookup_createNode_or_str(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -555,8 +541,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode(l_node)
-        look_r_node = lookup_createNode(r_node)
+        look_l_node = lookup_createNode_or_str(l_node)
+        look_r_node = lookup_createNode_or_str(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -569,8 +555,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode(l_node)
-        look_r_node = lookup_createNode(r_node)
+        look_l_node = lookup_createNode_or_str(l_node)
+        look_r_node = lookup_createNode_or_str(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
