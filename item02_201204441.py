@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from string import letters, digits, whitespace
 
+insertDicM = dict()
 
 class CuteType:
     INT = 1
@@ -345,6 +346,31 @@ class BasicPaser(object):
             head.next = self._parse_expr_list()
         return head
 
+def insert_table(id, value):  # 테이블 삽입 #전역 Method
+    print('insert id print: ')
+    print(print_node(id))
+    print('insert value print: ')
+    print(print_node(value))
+    idValue = id.value
+    vValue = value.value
+    insertDicM[idValue] = vValue
+    print(insertDicM)
+
+def lookup_table(id):  # 테이블에 값이 있는지 여부 파악 #전역 Method
+
+    print id
+
+    idValue = id.value
+
+    print insertDicM.has_key(idValue)
+
+    if insertDicM.has_key(idValue) is True:
+        print "look TURE"
+        return Node(TokenType.TRUE)
+    else:
+        print "look FALSE"
+        return Node(TokenType.FALSE)
+
 
 def run_list(root_node):
     """
@@ -359,6 +385,7 @@ def run_func(op_code_node):
     """
     :type op_code_node:Node/
     """
+
     def quote(node):
         return node
 
@@ -528,6 +555,21 @@ def run_func(op_code_node):
         else:
             return Node(TokenType.FALSE)
 
+
+    def define(node):
+
+        l_node = node.value.next
+        r_node = l_node.next
+
+        print(l_node)
+        print(r_node)
+        insert_table(l_node, r_node)
+
+    # def lambda(node):
+    #     l_node = node.value.next
+    #     r_node = l_node.next
+
+
     # Fill Out
     # table을 보고 함수를 작성하시오
 
@@ -546,13 +588,13 @@ def run_func(op_code_node):
         l_node = node.value
         r_node = l_node.next
 
-        while (l_node is not None):
-            if (l_node.type is TokenType.TRUE):
+        while l_node is not None:
+            if l_node.type is TokenType.TRUE:
                 break
                 return Node(TokenType.INT, r_node.value)
             else:
-                if (l_node.type is TokenType.LIST):
-                    if (run_list(l_node).type is TokenType.TRUE):
+                if l_node.type is TokenType.LIST:
+                    if run_list(l_node).type is TokenType.TRUE:
                         break
                         return Node(TokenType.INT, r_node.value)
                     else:
@@ -584,6 +626,7 @@ def run_func(op_code_node):
         return wrapper_new_list
 
     table = {}
+    table['define']=define
     table['cons'] = cons
     table["'"] = quote
     table['quote'] = quote
@@ -603,7 +646,6 @@ def run_func(op_code_node):
     table['cond'] = cond
 
     return table[op_code_node.value]
-
 
 def run_expr(root_node):
     """
@@ -653,8 +695,15 @@ def print_node(node):
 
     if node is None:
         return ''
+
     if node.type in [TokenType.ID, TokenType.INT]:
-        return node.value
+        if node.type is TokenType.ID:
+            if lookup_table(node).type is TokenType.TRUE:
+                return insertDicM[node.value]
+            else:
+                return node.value
+        else:
+            return node.value
     if node.type is TokenType.TRUE:
         return '#T'
     if node.type is TokenType.FALSE:
@@ -693,6 +742,8 @@ def print_node(node):
         return 'eq?'
     if node.type is TokenType.NOT:
         return 'not'
+    if node.type is TokenType.DEFINE:
+        return 'define'
     if node.type is TokenType.QUOTE:
         return "'"+print_node(node.next)
 
