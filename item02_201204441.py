@@ -370,7 +370,7 @@ def lookup_table(id):  # 테이블에 값이 있는지 여부 파악 #전역 Met
     else:
         return Node(TokenType.FALSE)
 
-def lookup_createNode_or_str(id,flag = False):
+def lookup_createNode_or_str(id,flag = False,list_flag = False):
 
     idValue = id.value
 
@@ -391,7 +391,14 @@ def lookup_createNode_or_str(id,flag = False):
 
     elif flag is True :
         if insertDicM.has_key(idValue) is True:
+
             vValue = insertDicM[idValue]
+
+            #해당 부분을 List_Node로 출력해서 반환해야한다면 해당 list_flag = True로 하면 해당부분이 수행하며 List노드로 만들어 반환함.
+            if list_flag is True :
+                return Node(TokenType.LIST, vValue)
+            else :
+                return vValue
             return vValue
         else :
             return id
@@ -468,7 +475,7 @@ def run_func(op_code_node):
     def null_q(node):
         # (define a 1) 후 (null? a)시 문제 발생
         l_node = run_expr(node.value.next)
-        look_l_node = lookup_createNode_or_str(l_node,True)
+        look_l_node = lookup_createNode_or_str(l_node.value,True,True)
         new_l_node = strip_quote(look_l_node).value
 
         if new_l_node is None:
@@ -478,7 +485,8 @@ def run_func(op_code_node):
 
     def atom_q(node):
         l_node = run_expr(node.value.next)
-        new_l_node = strip_quote(l_node)
+        look_l_node = lookup_createNode_or_str(l_node.value, True, True)
+        new_l_node = strip_quote(look_l_node)
 
         if new_l_node.type is TokenType.LIST:
             if new_l_node.value is None:
@@ -490,8 +498,10 @@ def run_func(op_code_node):
     def eq_q(node):
         l_node = node.value.next
         r_node = l_node.next
-        new_l_node = strip_quote(run_expr(l_node))
-        new_r_node = strip_quote(run_expr(r_node))
+        look_l_node = lookup_createNode_or_str(l_node, True, True)
+        look_r_node = lookup_createNode_or_str(r_node, True, True)
+        new_l_node = strip_quote(run_expr(look_l_node))
+        new_r_node = strip_quote(run_expr(look_r_node))
 
         if (new_l_node.type or new_r_node.type) is not TokenType.INT:
             return Node(TokenType.FALSE)
@@ -609,7 +619,9 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        insert_table(l_node, r_node)
+        look_r_node = lookup_createNode_or_str(r_node,True,True)
+
+        insert_table(l_node, look_r_node)
 
     # def lambda(node):
     #     l_node = node.value.next
