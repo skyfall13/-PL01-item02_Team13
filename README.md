@@ -22,5 +22,9 @@
 + null_q에서 문제 발생 (define a 1) 후 (null? a)시 문제 발생. LIST노드로 반환 필요. 
 + null_q, eq_q, atom_q 와 lt, et, rt 등 define이 적용되도록 할 필요가 있음.
 ---
+### 2017-06-08 오전 6:53 수정 내역 (by 김 수 현)
++ define test 5번 안됐던 내역 수정함.
++ lookup_createNode_or_str 수정함.
+---
 # 파이썬 버전
 + Python 2.7.13 version
