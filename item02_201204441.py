@@ -348,63 +348,20 @@ class BasicPaser(object):
 
 def insert_table(id, value):  # 테이블 삽입 #전역 Method
 
-    idvalue = id.value
-    vValue = run_expr(value)
-
     # insertTable에 저장하는 부분
-    insertDicM[idvalue] = vValue.value
+    insertDicM[id] = value
 
     # insertTable에 저장됨을 확인 하는 부분
-    if insertDicM.has_key(idvalue) is True:
-        print 'Success define '+ idvalue
+    if insertDicM.has_key(id) is True:
+        print 'Success define ', id
     else :
         print 'define Fail'
 
+# 테이블에 값이 있는지 여부 파악 #전역 Method
+def lookup_table(id):
 
-def lookup_table(id):  # 테이블에 값이 있는지 여부 파악 #전역 Method
-
-    idValue = id.value
-
-    if insertDicM.has_key(idValue) is True:
-        return Node(TokenType.TRUE)
-    else:
-        return Node(TokenType.FALSE)
-
-def lookup_createNode_or_str(id,flag = False,list_flag = False):
-
-    idValue = id.value
-
-    # flag 값이 false면  node타입으로 변경하여 반환 / true면 str값 그대로 반환
-    if flag is False:
-        if insertDicM.has_key(idValue) is True:
-
-            vValue = insertDicM[idValue]
-
-            look_cute = CuteScanner(vValue)
-            look_tokens = look_cute.tokenize()
-            look_basic_paser = BasicPaser(look_tokens)
-            insertvaluenode = look_basic_paser.parse_expr()
-            return insertvaluenode
-
-        else:
-            return id
-
-    elif flag is True :
-        if insertDicM.has_key(idValue) is True:
-
-            vValue = insertDicM[idValue]
-
-            #해당 부분을 List_Node로 출력해서 반환해야한다면 해당 list_flag = True로 하면 해당부분이 수행하며 List노드로 만들어 반환함.
-            if list_flag is True :
-                return Node(TokenType.LIST, vValue)
-            else :
-                return vValue
-            return vValue
-        else :
-            return id
-
-    else :
-        return id
+    result = insertDicM[id]
+    return result
 
 
 def run_list(root_node):
@@ -443,10 +400,10 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode_or_str(l_node,True)
+        look_l_node = run_expr(l_node)
         new_l_node = strip_quote(look_l_node)
 
-        look_r_node = lookup_createNode_or_str(r_node, True)
+        look_r_node = run_expr(r_node)
         new_r_node = strip_quote(look_r_node)
 
         new_l_node.next = new_r_node.value
@@ -456,7 +413,7 @@ def run_func(op_code_node):
     def car(node):
 
         l_node = node.value.next
-        look_l_node = lookup_createNode_or_str(l_node, True)
+        look_l_node = run_expr(l_node)
         new_l_node = strip_quote(look_l_node).value
 
         if new_l_node.type is not TokenType.LIST:
@@ -468,14 +425,14 @@ def run_func(op_code_node):
         :type node: Node
         """
         l_node = node.value.next
-        look_l_node = lookup_createNode_or_str(l_node, True)
+        look_l_node = run_expr(l_node)
         new_l_node = strip_quote(look_l_node).value
         return create_new_quote_list(new_l_node.next, True)
 
     def null_q(node):
         # (define a 1) 후 (null? a)시 문제 발생
-        l_node = run_expr(node.value.next)
-        look_l_node = lookup_createNode_or_str(l_node.value,True,True)
+        l_node = node.value.next
+        look_l_node = run_expr(l_node)
         new_l_node = strip_quote(look_l_node).value
 
         if new_l_node is None:
@@ -484,8 +441,8 @@ def run_func(op_code_node):
             return Node(TokenType.FALSE)
 
     def atom_q(node):
-        l_node = run_expr(node.value.next)
-        look_l_node = lookup_createNode_or_str(l_node.value, True, True)
+        l_node = node.value.next
+        look_l_node = run_expr(l_node)
         new_l_node = strip_quote(look_l_node)
 
         if new_l_node.type is TokenType.LIST:
@@ -498,8 +455,8 @@ def run_func(op_code_node):
     def eq_q(node):
         l_node = node.value.next
         r_node = l_node.next
-        look_l_node = lookup_createNode_or_str(l_node, True, True)
-        look_r_node = lookup_createNode_or_str(r_node, True, True)
+        look_l_node = run_expr(l_node)
+        look_r_node = run_expr(r_node)
         new_l_node = strip_quote(run_expr(look_l_node))
         new_r_node = strip_quote(run_expr(look_r_node))
 
@@ -523,8 +480,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode_or_str(l_node)
-        look_r_node = lookup_createNode_or_str(r_node)
+        look_l_node = run_expr(l_node)
+        look_r_node = run_expr(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -537,8 +494,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode_or_str(l_node)
-        look_r_node = lookup_createNode_or_str(r_node)
+        look_l_node = run_expr(l_node)
+        look_r_node = run_expr(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -551,8 +508,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode_or_str(l_node)
-        look_r_node = lookup_createNode_or_str(r_node)
+        look_l_node = run_expr(l_node)
+        look_r_node = run_expr(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -565,8 +522,8 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_l_node = lookup_createNode_or_str(l_node)
-        look_r_node = lookup_createNode_or_str(r_node)
+        look_l_node = run_expr(l_node)
+        look_r_node = run_expr(r_node)
 
         new_l_node = run_expr(look_l_node)
         new_r_node = run_expr(look_r_node)
@@ -619,9 +576,9 @@ def run_func(op_code_node):
         l_node = node.value.next
         r_node = l_node.next
 
-        look_r_node = lookup_createNode_or_str(r_node,True,True)
+        look_r_node = run_expr(r_node)
 
-        insert_table(l_node, look_r_node)
+        insert_table(l_node.value, look_r_node)
 
     # def lambda(node):
     #     l_node = node.value.next
@@ -713,7 +670,7 @@ def run_expr(root_node):
         return None
 
     if root_node.type is TokenType.ID:
-        return root_node
+        return lookup_table(root_node.value)
     elif root_node.type is TokenType.INT:
         return root_node
     elif root_node.type is TokenType.TRUE:
@@ -755,13 +712,9 @@ def print_node(node):
         return ''
 
     if node.type in [TokenType.ID, TokenType.INT]:
-        if node.type is TokenType.ID:
-            if lookup_table(node).type is TokenType.TRUE:
-                return insertDicM[node.value]
-            else:
-                return node.value
-        else:
-            return node.value
+        if node.value in insertDicM:
+            return insertDicM[node.value]
+        return node.value
     if node.type is TokenType.TRUE:
         return '#T'
     if node.type is TokenType.FALSE:

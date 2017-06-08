@@ -26,5 +26,16 @@
 + define test 5번 안됐던 내역 수정함.
 + lookup_createNode_or_str 수정함.
 ---
+### 2017-06-08 오후 11:58 수정 내역 (by 권오현 & 김수현)
++ 권오현 define refactory 
++ 김수현 refactory 시에 생긴 간단한 오류들 수정
++ test 케이스 7번외에 define으로 할 수 있는 모든 형태 가능.
++ lookup_createNode_or_str 함수 삭제
++ lookup_table 크게 변경
++ print_node 의 ID, INT부분 변경됨.
++ run_expr 부분에서 ID부분 변경됨.
++ insert_table 변수 삭제됨.
++ 위의 변경에 따른 모든 연산 부분이 수정됨.
+---
 # 파이썬 버전
 + Python 2.7.13 version
