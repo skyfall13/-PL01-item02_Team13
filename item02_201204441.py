@@ -704,13 +704,12 @@ def run_expr(root_node):
     elif root_node.type is TokenType.FALSE:
         return root_node
     elif root_node.type is TokenType.LIST:
-        if root_node.value.type is TokenType.LIST:
+        if root_node.value.type is TokenType.LIST:                                  # List가 두겹으로 쌓여있는 경우
             return run_list(root_node.value)
-        else:
-            if root_node.value.value in insertDicM:
-                lookup_table(root_node.value.value).next = root_node.value.next
-
-                root_node = lookup_table(root_node.value.value)
+        else: # List가 한겹으로 쌓여있는 경우
+            if root_node.value.value in insertDicM:                                  #root_node의 value.value가 이전에 define되어 테이블에 존재할 경우
+                lookup_table(root_node.value.value).next = root_node.value.next      # 테이블에서 찾아온 값의 next에 실인자를 연결시킨다.
+                root_node = lookup_table(root_node.value.value)                      # root_node에 변화된 값을 설정
 
             return run_list(root_node)
     else:
