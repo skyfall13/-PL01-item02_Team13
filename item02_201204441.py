@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from string import letters, digits, whitespace
 
+# symbol table 선언
 insertDicM = dict()
 
 class CuteType:
@@ -394,7 +395,6 @@ def run_func(op_code_node):
 
     def cons(node):
         """
-        cons는 str가지고 움직이는 것. 사칙연산은 반드시 node형태에서 계산이 들어감
         :type node: Node
         """
         l_node = node.value.next
@@ -580,13 +580,38 @@ def run_func(op_code_node):
 
         insert_table(l_node.value, look_r_node)
 
-    # def lambda(node):
-    #     l_node = node.value.next
-    #     r_node = l_node.next
+    #람다 구현
+    def run_lambda(node):
+        formal_param_node = node.value.next.value  # 람다식 매개변수
+        exp_node = node.value.next.next  # 람다식 실행부분
+        actual_param_node = node.next  # 람다식 실인자
+
+        if actual_param_node is None:  # 첫번째 원소가 람다일때 두번째 원소가 없으면 그대로 리턴
+            return node
+
+        # 실인자 바인딩
+        while True:
+            actual_value_Binding = run_expr(actual_param_node)  # 실인자의 run_expr
+
+            insert_table(formal_param_node.value, actual_value_Binding)  # 매개변수에 바인딩
+
+            if formal_param_node.next is not None:  # 매개변수가 한개 이상일 경우, 바인딩
+                formal_param_node = formal_param_node.next
+                actual_param_node = actual_param_node.next
+            else:
+                break
 
 
-    # Fill Out
-    # table을 보고 함수를 작성하시오
+                # 실행부분 실행. 실행부분이 한개 인 경우
+        result = run_expr(exp_node)
+
+        # 실행부분이 두개 이상인 경우 실행부분을 끝까지 수행
+        while exp_node.next is not None:
+            result = run_expr(exp_node.next)
+            exp_node = exp_node.next
+
+        return result  # 람다식의 결과를 리턴
+
 
     def cond(node):
         l_node = node.value.next
@@ -641,7 +666,7 @@ def run_func(op_code_node):
         return wrapper_new_list
 
     table = {}
-    table['define']=define
+    table['define'] = define
     table['cons'] = cons
     table["'"] = quote
     table['quote'] = quote
@@ -659,6 +684,7 @@ def run_func(op_code_node):
     table['>'] = gt
     table['='] = eq
     table['cond'] = cond
+    table['lambda'] = run_lambda
 
     return table[op_code_node.value]
 
@@ -678,7 +704,15 @@ def run_expr(root_node):
     elif root_node.type is TokenType.FALSE:
         return root_node
     elif root_node.type is TokenType.LIST:
-        return run_list(root_node)
+        if root_node.value.type is TokenType.LIST:
+            return run_list(root_node.value)
+        else:
+            if root_node.value.value in insertDicM:
+                lookup_table(root_node.value.value).next = root_node.value.next
+
+                root_node = lookup_table(root_node.value.value)
+
+            return run_list(root_node)
     else:
         print ('Run Expr Error')
     return None
